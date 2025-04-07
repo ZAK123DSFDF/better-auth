@@ -24,10 +24,12 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password is required" }),
+  password: z.string().min(8, { message: "Password is required" }),
   rememberMe: z.boolean().optional(),
 });
 
@@ -35,7 +37,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-
+  const [pending, setPending] = useState(false);
+  const { toast } = useToast();
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -45,9 +48,39 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
+  const onSubmit = async (data: LoginFormValues) => {
     // Here you would typically make an API call to your backend
     console.log("Login data:", data);
+    form.reset();
+    await authClient.signIn.email(
+      {
+        email: data.email,
+        password: data.password,
+      },
+      {
+        onRequest: () => {
+          setPending(true);
+        },
+        onSuccess: () => {
+          toast({
+            title: "Account created",
+            description:
+              "Your account has been created. Check your email for a verification link.",
+          });
+          console.log("success");
+        },
+        onError: (ctx) => {
+          console.log("error", ctx);
+          toast({
+            variant: "destructive",
+            title: "Something went wrong",
+            description: ctx.error.message ?? "Something went wrong.",
+          });
+          console.log("error", ctx.error.message);
+        },
+      },
+    );
+    setPending(false);
   };
 
   return (

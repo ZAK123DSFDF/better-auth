@@ -1,5 +1,5 @@
 "use server";
-import sgMail from "@sendgrid/mail";
+import nodemailer from "nodemailer";
 
 export async function sendEmail({
   to,
@@ -10,34 +10,37 @@ export async function sendEmail({
   subject: string;
   text: string;
 }) {
-  if (!process.env.SENDGRID_API_KEY) {
-    throw new Error("SENDGRID_API_KEY environment variable is not set");
+  // Mailtrap configuration - use environment variables
+  const mailtrapConfig = {
+    host: process.env.MAILTRAP_HOST || "sandbox.smtp.mailtrap.io",
+    port: parseInt(process.env.MAILTRAP_PORT || "2525"),
+    auth: {
+      user: process.env.MAILTRAP_USER,
+      pass: process.env.MAILTRAP_PASS,
+    },
+  };
+
+  if (!mailtrapConfig.auth.user || !mailtrapConfig.auth.pass) {
+    throw new Error("Mailtrap credentials not configured");
   }
+
   if (!process.env.EMAIL_FROM) {
     throw new Error("EMAIL_FROM environment variable is not set");
   }
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-  const message = {
-    to: to.toLowerCase().trim(),
-    from: process.env.EMAIL_FROM,
-    subject: subject.trim(),
-    text: text.trim(),
-  };
+  const transporter = nodemailer.createTransport(mailtrapConfig);
 
   try {
-    const [response] = await sgMail.send(message);
-
-    if (response.statusCode !== 202) {
-      throw new Error(
-        `SendGrid API returned status code ${response.statusCode}`,
-      );
-    }
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: to.toLowerCase().trim(),
+      subject: subject.trim(),
+      text: text.trim(),
+    });
 
     return {
       success: true,
-      messageId: response.headers["x-message-id"],
+      messageId: info.messageId,
     };
   } catch (error) {
     console.error("Error sending email:", error);
