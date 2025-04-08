@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -39,6 +40,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -56,6 +58,7 @@ const Login = () => {
       {
         email: data.email,
         password: data.password,
+        rememberMe: data.rememberMe,
       },
       {
         onRequest: () => {
@@ -68,6 +71,7 @@ const Login = () => {
               "Your account has been created. Check your email for a verification link.",
           });
           console.log("success");
+          router.push("/dashboard");
         },
         onError: (ctx) => {
           console.log("error", ctx);
@@ -169,12 +173,19 @@ const Login = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="rememberMe"
-                      checked={form.watch("rememberMe")}
-                      onCheckedChange={(checked) => {
-                        form.setValue("rememberMe", checked as boolean);
-                      }}
+                    <FormField
+                      control={form.control}
+                      name="rememberMe"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
                     />
                     <label
                       htmlFor="rememberMe"
@@ -192,8 +203,17 @@ const Login = () => {
                   </Link>
                 </div>
 
-                <Button type="submit" className="w-full">
-                  Log in <ArrowRight className="ml-2 h-4 w-4" />
+                <Button type="submit" className="w-full" disabled={pending}>
+                  {pending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Please wait...
+                    </>
+                  ) : (
+                    <>
+                      Log in <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               </form>
             </Form>

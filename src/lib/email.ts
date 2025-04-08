@@ -10,33 +10,28 @@ export async function sendEmail({
   subject: string;
   text: string;
 }) {
-  // Mailtrap configuration - use environment variables
-  const mailtrapConfig = {
-    host: process.env.MAILTRAP_HOST || "sandbox.smtp.mailtrap.io",
-    port: parseInt(process.env.MAILTRAP_PORT || "2525"),
-    auth: {
-      user: process.env.MAILTRAP_USER,
-      pass: process.env.MAILTRAP_PASS,
-    },
-  };
+  // Local SMTP server configuration (MailDev/MailHog)
+  const transporter = nodemailer.createTransport({
+    host: "localhost", // MailDev/MailHog runs on your machine
+    port: 1025, // Default SMTP port for these tools
+    secure: false, // No TLS for local dev
+    ignoreTLS: true, // Skip certificate verification
+    // No auth needed for local dev
+  });
 
-  if (!mailtrapConfig.auth.user || !mailtrapConfig.auth.pass) {
-    throw new Error("Mailtrap credentials not configured");
-  }
-
-  if (!process.env.EMAIL_FROM) {
-    throw new Error("EMAIL_FROM environment variable is not set");
-  }
-
-  const transporter = nodemailer.createTransport(mailtrapConfig);
+  // Default "from" address for development
+  const devFrom = "dev@localhost.com";
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+      from: devFrom,
       to: to.toLowerCase().trim(),
       subject: subject.trim(),
       text: text.trim(),
     });
+
+    console.log("Email sent (dev mode):", info.messageId);
+    console.log("Preview URL: http://localhost:1080"); // MailDev web interface
 
     return {
       success: true,
@@ -46,7 +41,7 @@ export async function sendEmail({
     console.error("Error sending email:", error);
     return {
       success: false,
-      message: "Failed to send email. Please try again later.",
+      message: "Failed to send email. Is your local MailDev/MailHog running?",
     };
   }
 }
