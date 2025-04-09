@@ -8,7 +8,6 @@ const dashboardPage = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  console.log("session", session);
   if (!session) {
     redirect("login");
   }

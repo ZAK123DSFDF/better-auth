@@ -44,8 +44,6 @@ const Signup = () => {
   const { toast } = useToast();
 
   const onSubmit = async (data: SignUpFormValues) => {
-    // Here you would typically make an API call to your backend
-    console.log("Sign up data:", data);
     form.reset();
     await authClient.signUp.email(
       {
