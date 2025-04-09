@@ -1,10 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -13,31 +12,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(8, { message: "Password is required" }),
-  rememberMe: z.boolean().optional(),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-
+import { GoogleAuthButton } from "@/components/Auth/GoogleAuthButton";
+import { InputField, CheckboxField } from "@/components/Auth/FormFields";
+import { LoginFormValues, loginSchema } from "@/lib/schema/loginSchema";
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -51,8 +35,6 @@ const Login = () => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    // Here you would typically make an API call to your backend
-    console.log("Login data:", data);
     form.reset();
     await authClient.signIn.email(
       {
@@ -65,12 +47,6 @@ const Login = () => {
           setPending(true);
         },
         onSuccess: () => {
-          toast({
-            title: "Account created",
-            description:
-              "Your account has been created. Check your email for a verification link.",
-          });
-          console.log("success");
           router.push("/dashboard");
         },
         onError: (ctx) => {
@@ -116,84 +92,31 @@ const Login = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
-                <FormField
+                <InputField
                   control={form.control}
                   name="email"
-                  render={({ field }: any) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            type="email"
-                            placeholder="john.doe@example.com"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Email"
+                  placeholder="john.doe@example.com"
+                  type="email"
+                  icon={<Mail className="h-5 w-5 text-muted-foreground" />}
                 />
 
-                <FormField
+                <InputField
                   control={form.control}
                   name="password"
-                  render={({ field }: any) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="••••••••"
-                            className="pl-10 pr-10"
-                            {...field}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-5 w-5" />
-                            ) : (
-                              <Eye className="h-5 w-5" />
-                            )}
-                          </button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Password"
+                  placeholder="••••••••"
+                  type="password"
+                  icon={<Lock className="h-5 w-5 text-muted-foreground" />}
+                  showPasswordToggle={true}
                 />
 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <FormField
-                      control={form.control}
-                      name="rememberMe"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <label
-                      htmlFor="rememberMe"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Remember me
-                    </label>
-                  </div>
+                  <CheckboxField
+                    control={form.control}
+                    name="rememberMe"
+                    label="Remember me"
+                  />
 
                   <Link
                     href="/forgot-password"
@@ -230,15 +153,13 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="w-full">
-                Google
-              </Button>
-              <Button variant="outline" className="w-full">
-                GitHub
-              </Button>
+            <div className="flex gap-4 ">
+              <GoogleAuthButton
+                action="login"
+                buttonText="Sign up with Google"
+                redirectTo="/dashboard"
+              />
             </div>
-
             <div className="text-center text-sm">
               Don't have an account?{" "}
               <Link

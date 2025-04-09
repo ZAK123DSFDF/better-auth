@@ -25,22 +25,10 @@ import {
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
-
-const signUpSchema = z
-  .object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-    email: z.string().email({ message: "Please enter a valid email address" }),
-    password: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters" }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
-type SignUpFormValues = z.infer<typeof signUpSchema>;
+import { GoogleIcon } from "@/components/ui/google-icon";
+import { GoogleAuthButton } from "@/components/Auth/GoogleAuthButton";
+import { InputField } from "@/components/Auth/FormFields";
+import { SignUpFormValues, signUpSchema } from "@/lib/schema/signupSchema";
 
 const Signup = () => {
   const form = useForm<SignUpFormValues>({
@@ -54,6 +42,7 @@ const Signup = () => {
   });
   const [pending, setPending] = useState(false);
   const { toast } = useToast();
+
   const onSubmit = async (data: SignUpFormValues) => {
     // Here you would typically make an API call to your backend
     console.log("Sign up data:", data);
@@ -119,91 +108,42 @@ const Signup = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
-                <FormField
+                <InputField
                   control={form.control}
                   name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            placeholder="John Doe"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Full name"
+                  placeholder="john doe"
+                  type="text"
+                  icon={<User className="h-5 w-5 text-muted-foreground" />}
                 />
 
-                <FormField
+                <InputField
                   control={form.control}
                   name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            type="email"
-                            placeholder="john.doe@example.com"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Email"
+                  placeholder="john.doe@example.com"
+                  type="email"
+                  icon={<Mail className="h-5 w-5 text-muted-foreground" />}
                 />
 
-                <FormField
+                <InputField
                   control={form.control}
                   name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            type="password"
-                            placeholder="••••••••"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Password"
+                  placeholder="••••••••"
+                  type="password"
+                  icon={<Lock className="h-5 w-5 text-muted-foreground" />}
+                  showPasswordToggle={true}
                 />
 
-                <FormField
+                <InputField
                   control={form.control}
                   name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            type="password"
-                            placeholder="••••••••"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Confirm Password"
+                  placeholder="••••••••"
+                  type="password"
+                  icon={<Lock className="h-5 w-5 text-muted-foreground" />}
+                  showPasswordToggle={true}
                 />
 
                 <Button type="submit" className="w-full" disabled={pending}>
@@ -214,7 +154,7 @@ const Signup = () => {
                     </>
                   ) : (
                     <>
-                      Log in <ArrowRight className="h-4 w-4" />
+                      Sign up <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </Button>
@@ -233,13 +173,12 @@ const Signup = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="w-full">
-                Google
-              </Button>
-              <Button variant="outline" className="w-full">
-                GitHub
-              </Button>
+            <div className="flex gap-4 ">
+              <GoogleAuthButton
+                action="signup"
+                buttonText="Sign up with Google"
+                redirectTo="/dashboard"
+              />
             </div>
 
             <div className="text-center text-sm">

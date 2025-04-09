@@ -25,12 +25,11 @@ import {
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-});
-
-type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+import { InputField } from "@/components/Auth/FormFields";
+import {
+  ForgotPasswordFormValues,
+  forgotPasswordSchema,
+} from "@/lib/schema/forgotPasswordSchema";
 
 const ForgotPassword = () => {
   const form = useForm<ForgotPasswordFormValues>({
@@ -94,26 +93,13 @@ const ForgotPassword = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
-                <FormField
+                <InputField
                   control={form.control}
                   name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            type="email"
-                            placeholder="john.doe@example.com"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Email"
+                  placeholder="john.doe@example.com"
+                  type="email"
+                  icon={<Mail className="h-5 w-5 text-muted-foreground" />}
                 />
 
                 <Button type="submit" className="w-full" disabled={pending}>
