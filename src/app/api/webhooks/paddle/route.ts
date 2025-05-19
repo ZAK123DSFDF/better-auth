@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await request.text();
     const signature = request.headers.get("Paddle-Signature");
-    const secret = process.env.PADDLE_WEBHOOK_SECRET;
+    const secret = process.env.PADDLE_WEBHOOK_PUBLIC_KEY;
 
     if (!secret || !signature) {
       console.error("❌ Missing webhook secret or signature");
