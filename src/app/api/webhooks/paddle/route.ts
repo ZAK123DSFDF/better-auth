@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get("Paddle-Signature");
     const secret = process.env.PADDLE_WEBHOOK_PUBLIC_KEY;
 
-    if (!secret) {
+    if (!secret || !signature) {
       console.error("❌ Missing webhook secret or signature");
       return NextResponse.json(
         { error: "Missing configuration" },
