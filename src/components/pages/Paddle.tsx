@@ -21,7 +21,7 @@ export default function Payment() {
       settings: {
         displayMode: "overlay",
         theme: "light",
-        successUrl: "http://localhost:3000/success",
+        successUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
       },
     });
   };
@@ -35,7 +35,7 @@ export default function Payment() {
       settings: {
         displayMode: "inline",
         theme: "light",
-        successUrl: "http://localhost:3000/success",
+        successUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
       },
     });
   };
