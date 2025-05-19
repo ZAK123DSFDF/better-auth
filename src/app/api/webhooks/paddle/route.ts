@@ -3,7 +3,7 @@ import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = await request.text(); // Get raw text first
+    const payload = await request.text();
     const signature = request.headers.get("Paddle-Signature");
 
     if (!process.env.PADDLE_WEBHOOK_PUBLIC_KEY || !signature) {
@@ -13,20 +13,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. Properly format the public key
-    const publicKey = process.env.PADDLE_WEBHOOK_PUBLIC_KEY.replace(
-      /-----BEGIN PUBLIC KEY-----/,
-      "",
-    )
-      .replace(/-----END PUBLIC KEY-----/, "")
-      .replace(/\n/g, "")
-      .trim();
+    const key = process.env.PADDLE_WEBHOOK_PUBLIC_KEY;
 
-    const key = `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`;
-
-    // 2. Verify using the raw payload text (not parsed JSON)
     const verifier = crypto.createVerify("sha1");
     verifier.update(payload);
+    verifier.end();
 
     const isValid = verifier.verify(key, signature, "base64");
 
@@ -35,10 +26,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    // 3. Now parse the JSON payload
     const jsonPayload = JSON.parse(payload);
-
-    // Process events...
     console.log("🔔 Paddle event:", jsonPayload.event_type);
 
     switch (jsonPayload.event_type) {
