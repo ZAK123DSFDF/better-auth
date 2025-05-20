@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 export default function Payment() {
   const [paddle, setPaddle] = useState<Paddle>();
   const [isLoading, setIsLoading] = useState(false);
+  const customerData = {
+    email: "zakfront@gmail.com",
+  };
   useEffect(() => {
     initializePaddle({
       environment: "sandbox",
@@ -21,6 +24,9 @@ export default function Payment() {
         : `${process.env.NEXT_PUBLIC_BASE_URL}/success`;
     paddle.Checkout.open({
       items: [{ priceId: "pri_01jvacqbrzfrps2mm91sxdraf5", quantity: 1 }],
+      customer: {
+        email: customerData.email,
+      },
       settings: {
         displayMode: "overlay",
         theme: "light",
