@@ -15,7 +15,6 @@ export async function GET(req: Request) {
       },
     ],
     customData: {
-      email: "zakFront@gmail.com",
       name: "zak",
     },
   });
