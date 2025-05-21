@@ -6,9 +6,6 @@ import { useEffect, useState } from "react";
 export default function Payment() {
   const [paddle, setPaddle] = useState<Paddle>();
   const [isLoading, setIsLoading] = useState(false);
-  const customerData = {
-    email: "zakfront@gmail.com",
-  };
   useEffect(() => {
     initializePaddle({
       environment: "sandbox",
