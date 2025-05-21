@@ -23,6 +23,7 @@ export default function Payment() {
       items: [{ priceId: "pri_01jvacqbrzfrps2mm91sxdraf5", quantity: 1 }],
       customData: {
         email: "zakFront@gmail.com",
+        name: "zak",
       },
       settings: {
         displayMode: "overlay",
@@ -44,6 +45,7 @@ export default function Payment() {
       transactionId: data.txn.id,
       customData: {
         email: "zakFront@gmail.com",
+        name: "zak",
       },
       settings: {
         displayMode: "inline",
