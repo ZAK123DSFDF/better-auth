@@ -17,7 +17,7 @@ export default function Payment() {
     if (!paddle) return alert("Paddle not initialized");
     const successUrl =
       process.env.NODE_ENV === "production"
-        ? "https://better-auth-plum.vercel.app/success"
+        ? "https://better-auth-pi.vercel.app/success"
         : `${process.env.NEXT_PUBLIC_BASE_URL}/success`;
     paddle.Checkout.open({
       items: [{ priceId: "pri_01jvacqbrzfrps2mm91sxdraf5", quantity: 1 }],
@@ -31,7 +31,7 @@ export default function Payment() {
   const handleCheckoutServer = async () => {
     const successUrl =
       process.env.NODE_ENV === "production"
-        ? "https://better-auth-plum.vercel.app/success"
+        ? "https://better-auth-pi.vercel.app/success"
         : `${process.env.NEXT_PUBLIC_BASE_URL}/success`;
     if (!paddle) return alert("Paddle not initialized");
 
