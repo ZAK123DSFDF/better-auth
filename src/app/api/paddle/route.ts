@@ -1,6 +1,6 @@
 import { Environment, Paddle } from "@paddle/paddle-node-sdk";
 import { NextResponse } from "next/server";
-
+const isProduction = process.env.NODE_ENV === "production";
 const paddle = new Paddle(process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID!, {
   environment: Environment.sandbox,
 });
@@ -17,6 +17,8 @@ export async function GET(req: Request) {
     ],
     customData: {
       email: "zakFront@gmail.com",
+      timestamp: new Date().toISOString(),
+      environment: isProduction ? "production" : "sandbox",
     },
   });
 
