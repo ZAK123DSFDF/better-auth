@@ -15,6 +15,9 @@ export async function GET(req: Request) {
         priceId: "pri_01jvacqbrzfrps2mm91sxdraf5",
       },
     ],
+    customData: {
+      email: "zakFront@gmail.com",
+    },
   });
 
   console.log(txn);
