@@ -39,9 +39,6 @@ export default function Payment() {
     const data = await response.json();
     paddle.Checkout.open({
       transactionId: data.txn.id,
-      customData: {
-        email: "zakFront@gmail.com",
-      },
       settings: {
         displayMode: "inline",
         theme: "light",
