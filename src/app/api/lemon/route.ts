@@ -19,7 +19,8 @@ export async function POST(req: Request) {
           attributes: {
             checkout_data: {
               custom: {
-                user_id: "123", // Replace with actual user ID from your system
+                email: "zakLemon@gmail.com",
+                name: "zakLemon",
               },
             },
           },
