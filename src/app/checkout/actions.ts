@@ -1,11 +1,19 @@
-// app/checkout/actions.ts
 "use server";
-
-// @ts-ignore
 import Stripe from "stripe";
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function createCheckoutSession() {
+  // Determine environment
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // Set base URLs
+  const productionBaseUrl = "https://better-auth-pi.vercel.app";
+  const localBaseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+  const baseUrl = isProduction ? productionBaseUrl : localBaseUrl;
+
   const session = await stripe.checkout.sessions.create(
     {
       payment_method_types: ["card"],
@@ -16,15 +24,15 @@ export async function createCheckoutSession() {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
+      success_url: `${baseUrl}/success`,
+      cancel_url: `${baseUrl}/cancel`,
       metadata: {
         email: "zakStripe@gmail.com",
         name: "zakStripe",
       },
     },
     {
-      stripeAccount: "acct_1RMSPjReh9FhC0f7", // Critical addition
+      stripeAccount: "acct_1RMSPjReh9FhC0f7",
     },
   );
 
