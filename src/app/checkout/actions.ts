@@ -18,10 +18,6 @@ export async function createCheckoutSession() {
       mode: "payment",
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
-      metadata: {
-        email: "zakStripe@gmail.com",
-        name: "zakStripe",
-      },
     },
     {
       stripeAccount: "acct_1RMSPjReh9FhC0f7", // Critical addition
