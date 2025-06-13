@@ -14,27 +14,22 @@ export async function createCheckoutSession() {
 
   const baseUrl = isProduction ? productionBaseUrl : localBaseUrl;
 
-  const session = await stripe.checkout.sessions.create(
-    {
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: "price_1RZXfw4gdP9i8VnsO225oxSK",
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${baseUrl}/success`,
-      cancel_url: `${baseUrl}/cancel`,
-      metadata: {
-        email: "zakStripe@gmail.com",
-        name: "zakStripe",
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: "price_1RZXfw4gdP9i8VnsO225oxSK",
+        quantity: 1,
       },
+    ],
+    mode: "subscription",
+    success_url: `${baseUrl}/success`,
+    cancel_url: `${baseUrl}/cancel`,
+    metadata: {
+      email: "zakStripe@gmail.com",
+      name: "zakStripe",
     },
-    {
-      stripeAccount: "acct_1RZWjTGC8oDpreja",
-    },
-  );
+  });
 
   return { url: session.url };
 }
