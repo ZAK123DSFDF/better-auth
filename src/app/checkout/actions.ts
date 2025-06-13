@@ -19,11 +19,11 @@ export async function createCheckoutSession() {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: "price_1RMUAhReh9FhC0f7jHIMczA2",
+          price: "price_1RZXfw4gdP9i8VnsO225oxSK",
           quantity: 1,
         },
       ],
-      mode: "payment",
+      mode: "subscription",
       success_url: `${baseUrl}/success`,
       cancel_url: `${baseUrl}/cancel`,
       metadata: {
@@ -32,7 +32,7 @@ export async function createCheckoutSession() {
       },
     },
     {
-      stripeAccount: "acct_1RMSPjReh9FhC0f7",
+      stripeAccount: "acct_1RZWjTGC8oDpreja",
     },
   );
 
