@@ -34,7 +34,7 @@ export async function POST(req: Request) {
             variant: {
               data: {
                 type: "variants",
-                id: "806035",
+                id: "851128",
               },
             },
           },
