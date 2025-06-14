@@ -18,11 +18,11 @@ export async function createCheckoutSession() {
     payment_method_types: ["card"],
     line_items: [
       {
-        price: "price_1RZXfw4gdP9i8VnsO225oxSK",
+        price: "price_1RZyPg4gdP9i8VnsQGLV99nS",
         quantity: 1,
       },
     ],
-    mode: "subscription",
+    mode: "payment",
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
     metadata: {
