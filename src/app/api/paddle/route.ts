@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     items: [
       {
         quantity: 1,
-        priceId: "pri_01jvacqbrzfrps2mm91sxdraf5",
+        priceId: "sub_01hv8x29kz0t586xy6zn1a62ny",
       },
     ],
     customData: {
