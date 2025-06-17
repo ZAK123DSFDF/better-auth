@@ -8,7 +8,7 @@ export default function CheckoutPage() {
 
   // Example price_ids
   const UPGRADE_PRICE_ID = "price_1Raa5s4gdP9i8VnsUkSoqWsX";
-  const DOWNGRADE_PRICE_ID = "price_1Rbb5t4gdP9i8VnsXYZabc12";
+  const DOWNGRADE_PRICE_ID = "price_1RZXfw4gdP9i8VnsO225oxSK";
 
   async function handleCheckout() {
     const { url } = await createCheckoutSession();
