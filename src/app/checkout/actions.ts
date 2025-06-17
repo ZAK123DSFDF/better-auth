@@ -35,7 +35,7 @@ export async function createCheckoutSession() {
 }
 
 // 🟩 Upgrade Subscription
-export async function upgradeSubscriptionSession() {
+export async function upgradeSubscriptionSession(priceId: string) {
   // 1. Get current subscription
   const subscription = await stripe.subscriptions.retrieve(
     "sub_1RadUo4gdP9i8VnssB7sAU1j",
@@ -52,7 +52,7 @@ export async function upgradeSubscriptionSession() {
       items: [
         {
           id: currentItemId,
-          price: "price_1Raa5s4gdP9i8VnsUkSoqWsX",
+          price: priceId,
         },
       ],
       proration_behavior: "create_prorations",
