@@ -26,7 +26,8 @@ export async function createCheckoutSession() {
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
     metadata: {
-      action: "new_subscription",
+      name: "Zak",
+      email: "zakStripe@gmail.com",
     },
   });
 
