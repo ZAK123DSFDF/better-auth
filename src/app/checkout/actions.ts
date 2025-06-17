@@ -38,7 +38,7 @@ export async function createCheckoutSession() {
 export async function upgradeSubscriptionSession(priceId: string) {
   // 1. Get current subscription
   const subscription = await stripe.subscriptions.retrieve(
-    "sub_1RadUo4gdP9i8VnssB7sAU1j",
+    "sub_1RaxYL4gdP9i8Vnsm1drrMSa",
   );
 
   // 2. Get the current item to replace
@@ -47,7 +47,7 @@ export async function upgradeSubscriptionSession(priceId: string) {
 
   // 3. Update the subscription to use the new price
   const updated = await stripe.subscriptions.update(
-    "sub_1RadUo4gdP9i8VnssB7sAU1j",
+    "sub_1RaxYL4gdP9i8Vnsm1drrMSa",
     {
       items: [
         {
@@ -55,7 +55,6 @@ export async function upgradeSubscriptionSession(priceId: string) {
           price: priceId,
         },
       ],
-      proration_behavior: "create_prorations",
     },
   );
   return {
