@@ -37,26 +37,31 @@ export async function createCheckoutSession() {
 // 🟩 Upgrade Subscription
 export async function upgradeSubscriptionSession(priceId: string) {
   // 1. Get current subscription
-  const subscription = await stripe.subscriptions.retrieve(
-    "sub_1RaxYL4gdP9i8Vnsm1drrMSa",
-  );
+  const subscriptions = await stripe.subscriptions.list({
+    customer: "cus_SW3JhLLu9adFvn",
+    status: "active", // Only get active subscriptions
+    limit: 1, // Assuming one active subscription per customer for simplicity
+  });
+  if (!subscriptions.data.length) {
+    throw new Error("No active subscription found for this customer.");
+  }
+
+  const subscription = subscriptions.data[0];
+  const subscriptionId = subscription.id; // Get the actual ID
 
   // 2. Get the current item to replace
   const currentItemId = subscription.items.data[0]?.id;
   if (!currentItemId) throw new Error("No subscription item found");
 
   // 3. Update the subscription to use the new price
-  const updated = await stripe.subscriptions.update(
-    "sub_1RaxYL4gdP9i8Vnsm1drrMSa",
-    {
-      items: [
-        {
-          id: currentItemId,
-          price: priceId,
-        },
-      ],
-    },
-  );
+  const updated = await stripe.subscriptions.update(subscriptionId, {
+    items: [
+      {
+        id: currentItemId,
+        price: priceId,
+      },
+    ],
+  });
   return {
     success: true,
     subscriptionId: updated.id,
