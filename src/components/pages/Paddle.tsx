@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 export default function Payment() {
   const [paddle, setPaddle] = useState<Paddle>();
   const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     initializePaddle({
       environment: "sandbox",
@@ -72,7 +73,23 @@ export default function Payment() {
       },
     });
   };
-
+  const changePlan = async (newPriceId: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/paddle/subscriptions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId: "sub_XXXX", newPriceId }),
+      });
+      const json = await res.json();
+      if (json.success) alert("Subscription changed!");
+      else alert("Error: " + json.error);
+    } catch {
+      alert("Request failed");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <>
       <button
@@ -103,6 +120,23 @@ export default function Payment() {
       >
         Buy Now (Server Checkout)
       </button>
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={() => changePlan("pri_NEW_HIGHER_PRICE")}
+          disabled={loading}
+          className="bg-green-600 text-white px-4 py-2 rounded"
+        >
+          {loading ? "Processing..." : "Upgrade Plan"}
+        </button>
+
+        <button
+          onClick={() => changePlan("pri_OLDS_LOWER_PRICE")}
+          disabled={loading}
+          className="bg-yellow-600 text-white px-4 py-2 rounded"
+        >
+          {loading ? "Processing..." : "Downgrade Plan"}
+        </button>
+      </div>
     </>
   );
 }
