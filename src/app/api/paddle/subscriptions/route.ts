@@ -1,47 +1,70 @@
-import { Paddle, Environment } from "@paddle/paddle-node-sdk";
+// app/api/paddle/subscriptions/route.ts
+import {
+  Paddle,
+  Environment,
+  ProrationBillingMode,
+} from "@paddle/paddle-node-sdk";
 import { NextResponse } from "next/server";
 
-const paddle = new Paddle(process.env.PADDLE_VENDOR_ID!, {
+const paddle = new Paddle(process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID!, {
   environment: Environment.sandbox, // or .production
 });
 
-// PATCH: /api/paddle/subscriptions
 export async function PATCH(req: Request) {
   const { subscriptionId, newPriceId } = await req.json();
 
   if (!subscriptionId || !newPriceId) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing subscriptionId or newPriceId" },
+      { status: 400 },
+    );
   }
 
   try {
-    // 1️⃣ Fetch current subscription
-    const subs = await paddle.subscriptions.get(subscriptionId);
-    const existingItems = subs.items;
-    if (!existingItems || existingItems.length === 0) {
+    // 1. Verify the new price exists
+    try {
+      await paddle.prices.get(newPriceId);
+    } catch {
+      return NextResponse.json({ error: "Invalid price ID" }, { status: 400 });
+    }
+
+    // 2. Get current subscription
+    const subscription = await paddle.subscriptions.get(subscriptionId);
+    const currentItems = subscription.items;
+
+    if (!currentItems || currentItems.length === 0) {
       return NextResponse.json(
         { error: "No subscription items found" },
         { status: 400 },
       );
     }
 
-    // 2️⃣ Replace the base item price
-    const items = existingItems.map((item: any) => ({
-      subscriptionItemId: item.id,
-      priceId: item.isBase ? newPriceId : item.price.id,
-      quantity: item.quantity,
-    }));
+    // 3. Prepare update - assumes single item subscription
+    const updatePayload = {
+      items: [
+        {
+          priceId: newPriceId,
+          quantity: 1,
+        },
+      ],
+      prorationBillingMode: "prorated_immediately" as ProrationBillingMode,
+    };
+    // 5. Apply the actual update
+    const updatedSubscription = await paddle.subscriptions.update(
+      subscriptionId,
+      updatePayload,
+    );
 
-    // 3️⃣ Apply update via SDK
-    const updated = await paddle.subscriptions.update(subscriptionId, {
-      items,
-      prorationBillingMode: "prorated_immediately", // choose desired behavior
+    return NextResponse.json({
+      success: true,
+      subscription: updatedSubscription,
     });
-
-    return NextResponse.json({ success: true, subscription: updated });
   } catch (err: any) {
     console.error("Paddle update error:", err);
+    // Extract Paddle API error details if available
+    const errorDetails = err.response?.data?.error || err.message;
     return NextResponse.json(
-      { error: err.message || "Update failed" },
+      { error: "Update failed", details: errorDetails },
       { status: 500 },
     );
   }

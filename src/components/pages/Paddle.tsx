@@ -79,7 +79,10 @@ export default function Payment() {
       const res = await fetch("/api/paddle/subscriptions", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscriptionId: "sub_XXXX", newPriceId }),
+        body: JSON.stringify({
+          subscriptionId: "sub_01jxxd8sbpg4pjzz7radr6tmb6",
+          newPriceId,
+        }),
       });
       const json = await res.json();
       if (json.success) alert("Subscription changed!");
@@ -122,7 +125,7 @@ export default function Payment() {
       </button>
       <div className="flex flex-col gap-3">
         <button
-          onClick={() => changePlan("pri_NEW_HIGHER_PRICE")}
+          onClick={() => changePlan("pri_01jxskax9ehjnvqh35dhm58b7g")}
           disabled={loading}
           className="bg-green-600 text-white px-4 py-2 rounded"
         >
@@ -130,7 +133,7 @@ export default function Payment() {
         </button>
 
         <button
-          onClick={() => changePlan("pri_OLDS_LOWER_PRICE")}
+          onClick={() => changePlan("pri_01jxsasw3hby3ncb1tff4wc0n8")}
           disabled={loading}
           className="bg-yellow-600 text-white px-4 py-2 rounded"
         >
