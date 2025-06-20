@@ -16,10 +16,10 @@ const baseUrl = isProduction ? productionBaseUrl : localBaseUrl;
 export async function createCheckoutSession() {
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
-    mode: "subscription",
+    mode: "payment",
     line_items: [
       {
-        price: "price_1RZXfw4gdP9i8VnsO225oxSK", // your default plan
+        price: "price_1RZyPg4gdP9i8VnsQGLV99nS", // your default plan
         quantity: 1,
       },
     ],
@@ -38,7 +38,7 @@ export async function createCheckoutSession() {
 export async function upgradeSubscriptionSession(priceId: string) {
   // 1. Get current subscription
   const subscriptions = await stripe.subscriptions.list({
-    customer: "cus_SW3JhLLu9adFvn",
+    customer: "cus_SWgcqwx2dr8GBb",
     status: "active", // Only get active subscriptions
     limit: 1, // Assuming one active subscription per customer for simplicity
   });
