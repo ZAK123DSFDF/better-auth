@@ -23,6 +23,9 @@ export async function createCheckoutSession() {
         quantity: 1,
       },
     ],
+    subscription_data: {
+      trial_period_days: 7,
+    },
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
     metadata: {
@@ -38,7 +41,7 @@ export async function createCheckoutSession() {
 export async function upgradeSubscriptionSession(priceId: string) {
   // 1. Get current subscription
   const subscriptions = await stripe.subscriptions.list({
-    customer: "cus_SXHYiCBh1zxjiu",
+    customer: "cus_SXdb1d0iUFwBxY",
     status: "active", // Only get active subscriptions
     limit: 1, // Assuming one active subscription per customer for simplicity
   });
