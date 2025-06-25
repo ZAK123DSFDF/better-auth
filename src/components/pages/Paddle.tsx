@@ -71,7 +71,7 @@ export default function Payment() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subscriptionId: "sub_01jxxd8sbpg4pjzz7radr6tmb6",
+          subscriptionId: "sub_01jyhzc71pk6yd299kkg2we9kd",
           newPriceId,
         }),
       });
