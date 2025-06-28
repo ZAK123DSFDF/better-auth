@@ -41,7 +41,7 @@ export async function createCheckoutSession() {
 export async function upgradeSubscriptionSession(priceId: string) {
   // 1. Get current subscription
   const subscriptions = await stripe.subscriptions.list({
-    customer: "cus_SXdb1d0iUFwBxY",
+    customer: "cus_SZ17krZ3LGAZaj",
     status: "active", // Only get active subscriptions
     limit: 1, // Assuming one active subscription per customer for simplicity
   });
