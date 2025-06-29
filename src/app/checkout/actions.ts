@@ -19,13 +19,13 @@ export async function createCheckoutSession() {
     mode: "subscription",
     line_items: [
       {
-        price: "price_1RZXfw4gdP9i8VnsO225oxSK", // your default plan
+        price: "price_1RezKx4gdP9i8VnsEXGX8C3n", // your default plan
         quantity: 1,
       },
     ],
-    subscription_data: {
-      trial_period_days: 7,
-    },
+    // subscription_data: {
+    //   trial_period_days: 7,
+    // },
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
     metadata: {
