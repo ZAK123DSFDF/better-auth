@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import React from "react";
 import { AffiliateScriptBridge } from "@/components/Auth/AffiliateScriptBridge";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

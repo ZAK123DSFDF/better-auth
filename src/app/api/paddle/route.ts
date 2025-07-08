@@ -1,12 +1,14 @@
 import { Environment, Paddle } from "@paddle/paddle-node-sdk";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 const paddle = new Paddle(process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID!, {
   environment: Environment.sandbox,
 });
 
 export async function GET(req: Request) {
   // 30 usd txn
-
+  const cookieStore = await cookies();
+  const affiliateCookie = cookieStore.get("affiliate_data");
   const txn = await paddle.transactions.create({
     items: [
       {
@@ -15,8 +17,9 @@ export async function GET(req: Request) {
       },
     ],
     customData: {
-      name: "zak",
-      email: "zakFront@gmail.com",
+      refearnapp_affiliate_code: affiliateCookie
+        ? decodeURIComponent(affiliateCookie.value)
+        : null,
     },
   });
 

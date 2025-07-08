@@ -7,7 +7,12 @@ export default function Payment() {
   const [paddle, setPaddle] = useState<Paddle>();
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  function getCookie(name: string): string | null {
+    const match = document.cookie.match(
+      new RegExp("(^| )" + name + "=([^;]+)"),
+    );
+    return match ? decodeURIComponent(match[2]) : null;
+  }
   useEffect(() => {
     initializePaddle({
       environment: "sandbox",
@@ -23,13 +28,12 @@ export default function Payment() {
         ? "https://better-auth-pi.vercel.app/success"
         : `${process.env.NEXT_PUBLIC_BASE_URL}/success`;
 
-    const priceId = "pri_01jye2b5ynwxg3ne9j3dr2zs7a"; // <--- your main subscription price ID
+    const priceId = "pri_01jyyfa12kfez7aacfxsg1sea0"; // <--- your main subscription price ID
 
     paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
       customData: {
-        email: "zakFront@gmail.com",
-        name: "zak123",
+        refearnapp_affiliate_code: getCookie("affiliate_data"),
       },
       settings: {
         displayMode: "overlay",
@@ -53,8 +57,7 @@ export default function Payment() {
     paddle.Checkout.open({
       transactionId: data.txn.id,
       customData: {
-        email: "zakFront@gmail.com",
-        name: "zak123",
+        refearnapp_affiliate_code: getCookie("affiliate_data"),
       },
       settings: {
         displayMode: "inline",
@@ -71,7 +74,7 @@ export default function Payment() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subscriptionId: "sub_01jyhzc71pk6yd299kkg2we9kd",
+          subscriptionId: "sub_01jyypg5daxczc9qxn1948zv9g",
           newPriceId,
         }),
       });
@@ -111,7 +114,7 @@ export default function Payment() {
 
       <div className="flex flex-col gap-3">
         <button
-          onClick={() => changePlan("pri_01jxskax9ehjnvqh35dhm58b7g")}
+          onClick={() => changePlan("pri_01jyyfb8d9bzgn1a7009tef90y")}
           disabled={loading}
           className="bg-green-600 text-white px-4 py-2 rounded"
         >
@@ -119,7 +122,7 @@ export default function Payment() {
         </button>
 
         <button
-          onClick={() => changePlan("pri_01jxsasw3hby3ncb1tff4wc0n8")}
+          onClick={() => changePlan("pri_01jyyfa12kfez7aacfxsg1sea0")}
           disabled={loading}
           className="bg-yellow-600 text-white px-4 py-2 rounded"
         >

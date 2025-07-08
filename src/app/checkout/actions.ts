@@ -1,6 +1,7 @@
 "use server";
 
 import Stripe from "stripe";
+import { cookies } from "next/headers";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-04-30.basil",
@@ -14,6 +15,8 @@ const baseUrl = isProduction ? productionBaseUrl : localBaseUrl;
 
 // 🟦 Buy New Subscription
 export async function createCheckoutSession() {
+  const cookieStore = await cookies();
+  const affiliateCookie = cookieStore.get("affiliate_data");
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "subscription",
@@ -29,8 +32,9 @@ export async function createCheckoutSession() {
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
     metadata: {
-      name: "Zak",
-      email: "zakStripe@gmail.com",
+      refearnapp_affiliate_code: affiliateCookie
+        ? decodeURIComponent(affiliateCookie.value)
+        : null,
     },
   });
 
@@ -41,7 +45,7 @@ export async function createCheckoutSession() {
 export async function upgradeSubscriptionSession(priceId: string) {
   // 1. Get current subscription
   const subscriptions = await stripe.subscriptions.list({
-    customer: "cus_SaXRHXEcIwtiOY",
+    customer: "cus_SaplKEH4LlIkKk",
     status: "active", // Only get active subscriptions
     limit: 1, // Assuming one active subscription per customer for simplicity
   });
