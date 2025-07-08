@@ -1,6 +1,5 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server";
-import { processAffiliateRequest } from "next-affiliate-middleware";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,8 +12,6 @@ export function middleware(request: NextRequest) {
   ) {
     return;
   }
-
-  processAffiliateRequest(request);
 
   const token = request.cookies.get("token");
 
