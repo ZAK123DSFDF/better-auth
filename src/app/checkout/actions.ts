@@ -16,13 +16,13 @@ const baseUrl = isProduction ? productionBaseUrl : localBaseUrl;
 // 🟦 Buy New Subscription
 export async function createCheckoutSession() {
   const cookieStore = await cookies();
-  const affiliateCookie = cookieStore.get("affiliate_data");
+  const affiliateCookie = cookieStore.get("refearnapp_affiliate_cookie");
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "subscription",
     line_items: [
       {
-        price: "price_1RezKx4gdP9i8VnsEXGX8C3n", // your default plan
+        price: "price_1RZXfw4gdP9i8VnsO225oxSK", // your default plan
         quantity: 1,
       },
     ],
@@ -45,7 +45,7 @@ export async function createCheckoutSession() {
 export async function upgradeSubscriptionSession(priceId: string) {
   // 1. Get current subscription
   const subscriptions = await stripe.subscriptions.list({
-    customer: "cus_SaplKEH4LlIkKk",
+    customer: "cus_SeGpjonszjViV2",
     status: "active", // Only get active subscriptions
     limit: 1, // Assuming one active subscription per customer for simplicity
   });

@@ -4,7 +4,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import React from "react";
-import { AffiliateScriptBridge } from "@/components/Auth/AffiliateScriptBridge";
 import Script from "next/script";
 
 const geistSans = Geist({
@@ -31,7 +30,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
-        <AffiliateScriptBridge />
+        <Script
+          src="https://affiliate-marketing-ten.vercel.app/affiliateTrackingJavascript.js"
+          strategy="afterInteractive"
+        />
+        {/*<AffiliateScriptBridge />*/}
         <Toaster />
       </body>
     </html>
