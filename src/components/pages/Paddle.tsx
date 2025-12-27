@@ -28,12 +28,12 @@ export default function Payment() {
         ? "https://better-auth-pi.vercel.app/success"
         : `${process.env.NEXT_PUBLIC_BASE_URL}/success`;
 
-    const priceId = "pri_01jyyfa12kfez7aacfxsg1sea0"; // <--- your main subscription price ID
+    const priceId = "pri_01jxsasw3hby3ncb1tff4wc0n8"; // <--- your main subscription price ID
 
     paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
       customData: {
-        refearnapp_affiliate_code: getCookie("affiliate_data"),
+        refearnapp_affiliate_code: getCookie("refearnapp_affiliate_cookie"),
       },
       settings: {
         displayMode: "overlay",
@@ -57,7 +57,7 @@ export default function Payment() {
     paddle.Checkout.open({
       transactionId: data.txn.id,
       customData: {
-        refearnapp_affiliate_code: getCookie("affiliate_data"),
+        refearnapp_affiliate_code: getCookie("refearnapp_affiliate_cookie"),
       },
       settings: {
         displayMode: "inline",
@@ -74,7 +74,7 @@ export default function Payment() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subscriptionId: "sub_01jyypg5daxczc9qxn1948zv9g",
+          subscriptionId: "sub_01jzrfj42fddawmpzz5qksaske",
           newPriceId,
         }),
       });

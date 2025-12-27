@@ -8,12 +8,12 @@ const paddle = new Paddle(process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID!, {
 export async function GET(req: Request) {
   // 30 usd txn
   const cookieStore = await cookies();
-  const affiliateCookie = cookieStore.get("affiliate_data");
+  const affiliateCookie = cookieStore.get("refearnapp_affiliate_cookie");
   const txn = await paddle.transactions.create({
     items: [
       {
         quantity: 1,
-        priceId: "pri_01jxsasw3hby3ncb1tff4wc0n8",
+        priceId: "pri_01jyyfa12kfez7aacfxsg1sea0",
       },
     ],
     customData: {
