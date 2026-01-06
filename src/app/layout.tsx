@@ -31,7 +31,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
         <Script
-          src="https://affiliate-marketing-ten.vercel.app/affiliateTrackingJavascript.js"
+          src="https://refearnapp.com/affiliateTrackingJavascript.js"
           strategy="afterInteractive"
         />
         {/*<AffiliateScriptBridge />*/}
