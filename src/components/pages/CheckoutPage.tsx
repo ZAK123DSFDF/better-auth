@@ -53,6 +53,17 @@ export default function CheckoutPage({
   return (
     <div className="flex flex-col gap-8 p-8 max-w-md mx-auto">
       <section className="space-y-4">
+        {/* One-Time Payment */}
+        <div className="border p-4 rounded-lg shadow-sm">
+          <p className="font-semibold">Lifetime Access</p>
+          <button
+            onClick={() => handleCheckout()}
+            disabled={!!loadingPrice}
+            className="w-full mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+          >
+            {loadingPrice === "one-time" ? "Processing..." : "Buy Once"}
+          </button>
+        </div>
         <h2 className="text-xl font-bold border-b pb-2">New Customers</h2>
 
         {/* $20 Subscription */}
