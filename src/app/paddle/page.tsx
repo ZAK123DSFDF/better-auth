@@ -2,7 +2,8 @@
 import React from "react";
 import Payment from "@/components/pages/Paddle";
 import { getSubscriptionByEmail } from "@/lib/paddle";
-
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 const PaddlePage = async () => {
   const email = "zak@gmail.com";
   const subData = await getSubscriptionByEmail(email);
