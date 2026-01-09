@@ -60,13 +60,43 @@ function addCycles(date: Date, type: "MONTHLY" | "YEARLY", cycles: number) {
 
 /**
  * 3. Create Simulation (The Webhook "Mock")
+ * Now dynamically calculates the price from the actual subscription items.
  */
 async function createSimulation(fullSubscriptionPayload: any, cycles: number) {
+  // 1. Calculate the total recurring price from the subscription items
+  // Paddle unit_price.amount is in the lowest denomination (e.g., cents)
+  const totalAmountCents = fullSubscriptionPayload.items.reduce(
+    (sum: number, item: any) => {
+      const amount = parseInt(item.price.unit_price.amount || "0");
+      const quantity = item.quantity || 1;
+      return sum + amount * quantity;
+    },
+    0,
+  );
+
+  // 2. Prepare the mock transaction.completed payload
+  const mockTransactionPayload = {
+    id: `txn_sim_${Date.now()}`,
+    status: "completed",
+    customer_id: fullSubscriptionPayload.customer_id,
+    subscription_id: fullSubscriptionPayload.id,
+    created_at: new Date().toISOString(),
+    details: {
+      totals: {
+        currency_code: fullSubscriptionPayload.currency_code || "USD",
+        // Pass the calculated total as a string (e.g., "2900" for $29.00)
+        total: totalAmountCents.toString(),
+      },
+    },
+    // IMPORTANT: Your webhook relies on this to find the affiliate!
+    custom_data: fullSubscriptionPayload.custom_data || {},
+  };
+
   const payload = {
     notification_setting_id: NOTIFICATION_SETTING_ID,
-    name: `Simulate ${cycles} cycle(s) - ${Date.now()}`,
-    type: "subscription.updated", // This triggers your webhook
-    payload: fullSubscriptionPayload,
+    name: `Simulate Renewal ($${(totalAmountCents / 100).toFixed(2)}) - ${Date.now()}`,
+    type: "transaction.completed", // Now matches your webhook switch case
+    payload: mockTransactionPayload,
   };
 
   const res = await fetch(`${PADDLE_API}/simulations`, {
@@ -79,8 +109,11 @@ async function createSimulation(fullSubscriptionPayload: any, cycles: number) {
   });
 
   const json = await res.json();
-  if (!json.data)
-    throw new Error("Failed to create simulation: " + JSON.stringify(json));
+  if (!json.data) throw new Error("Simulation failed: " + JSON.stringify(json));
+
+  console.log(
+    `💰 Calculated Subscription Total: $${(totalAmountCents / 100).toFixed(2)}`,
+  );
   return json.data.id;
 }
 
