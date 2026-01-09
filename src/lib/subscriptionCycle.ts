@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 const PADDLE_API = "https://sandbox-api.paddle.com";
 const API_KEY = process.env.PADDLE_API_KEY!;
 const NOTIFICATION_SETTING_ID = process.env.PADDLE_NOTIFICATION_SETTING_ID!;
