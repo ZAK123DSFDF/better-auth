@@ -11,6 +11,7 @@ const PaddlePage = async () => {
     <>
       {/* 3. Pass the ID down as a prop to the Client Component */}
       <Payment
+        email={email}
         initialSubscriptionId={subData?.id ?? null}
         currentPriceId={subData?.priceId ?? null}
       />

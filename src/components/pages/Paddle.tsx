@@ -11,11 +11,13 @@ const PADDLE_PRICES = {
 };
 
 interface PaymentProps {
+  email: string;
   initialSubscriptionId: string | null;
   currentPriceId: string | null;
 }
 
 export default function Payment({
+  email,
   initialSubscriptionId,
   currentPriceId,
 }: PaymentProps) {
@@ -47,6 +49,9 @@ export default function Payment({
 
     paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
+      customer: {
+        email: email,
+      },
       customData: {
         refearnapp_affiliate_code: getCookie("refearnapp_affiliate_cookie"),
       },
