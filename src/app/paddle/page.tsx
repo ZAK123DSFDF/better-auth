@@ -1,11 +1,21 @@
+// app/paddle/page.tsx
 import React from "react";
 import Payment from "@/components/pages/Paddle";
+import { getSubscriptionByEmail } from "@/lib/paddle";
 
-const paddlePage = () => {
+const PaddlePage = async () => {
+  const email = "zak@gmail.com";
+  const subData = await getSubscriptionByEmail(email);
+
   return (
     <>
-      <Payment />
+      {/* 3. Pass the ID down as a prop to the Client Component */}
+      <Payment
+        initialSubscriptionId={subData?.id ?? null}
+        currentPriceId={subData?.priceId ?? null}
+      />
     </>
   );
 };
-export default paddlePage;
+
+export default PaddlePage;

@@ -1,7 +1,7 @@
 import { Environment, Paddle } from "@paddle/paddle-node-sdk";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-const paddle = new Paddle(process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID!, {
+const paddle = new Paddle(process.env.PADDLE_API_KEY!, {
   environment: Environment.sandbox,
 });
 
