@@ -85,12 +85,53 @@ async function createSimulation(fullSubscriptionPayload: any, cycles: number) {
 }
 
 async function runSimulation(simulationId: string) {
+  // 1. Start the run
   const res = await fetch(`${PADDLE_API}/simulations/${simulationId}/runs`, {
     method: "POST",
     headers: { Authorization: `Bearer ${API_KEY}` },
   });
   const json = await res.json();
-  return json.data;
+  const runId = json.data.id;
+
+  console.log(`⏳ Run ${runId} started. Waiting for delivery...`);
+
+  // 2. Poll for completion
+  let status = "pending";
+  let attempts = 0;
+
+  while ((status === "pending" || status === "in_progress") && attempts < 10) {
+    await new Promise((r) => setTimeout(r, 2000)); // Wait 2 seconds
+
+    const checkRes = await fetch(
+      `${PADDLE_API}/simulations/${simulationId}/runs/${runId}`,
+      {
+        headers: { Authorization: `Bearer ${API_KEY}` },
+      },
+    );
+    const checkJson = await checkRes.json();
+    status = checkJson.data.status;
+    attempts++;
+
+    console.log(`... Current Status: ${status}`);
+  }
+
+  // 3. Fetch the delivery logs for this specific run
+  const logRes = await fetch(
+    `${PADDLE_API}/simulations/${simulationId}/runs/${runId}/events`,
+    {
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    },
+  );
+  const logJson = await logRes.json();
+  const delivery = logJson.data[0];
+
+  if (delivery?.response) {
+    console.log(`\n📡 Webhook Target: ${delivery.request.url}`);
+    console.log(`📥 Server Response Code: ${delivery.response.status_code}`);
+    console.log(`💬 Server Response Body: ${delivery.response.body}`);
+  }
+
+  return status;
 }
 
 async function main() {
@@ -129,7 +170,7 @@ async function main() {
   console.log(`🚀 Simulation created: ${simId}`);
 
   const result = await runSimulation(simId);
-  console.log(`\n🎉 Simulation complete! Status: ${result.status}`);
+  console.log(`\n🎉 Simulation complete! Status: ${result}`);
 }
 
 main().catch((err) => console.error("\n❌ Error:", err.message));
