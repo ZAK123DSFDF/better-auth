@@ -60,11 +60,8 @@ function addCycles(date: Date, type: "MONTHLY" | "YEARLY", cycles: number) {
 
 /**
  * 3. Create Simulation (The Webhook "Mock")
- * Now dynamically calculates the price from the actual subscription items.
  */
 async function createSimulation(fullSubscriptionPayload: any, cycles: number) {
-  // 1. Calculate the total recurring price from the subscription items
-  // Paddle unit_price.amount is in the lowest denomination (e.g., cents)
   const totalAmountCents = fullSubscriptionPayload.items.reduce(
     (sum: number, item: any) => {
       const amount = parseInt(item.price.unit_price.amount || "0");
@@ -74,9 +71,15 @@ async function createSimulation(fullSubscriptionPayload: any, cycles: number) {
     0,
   );
 
-  // 2. Prepare the mock transaction.completed payload
+  // ✅ Generate a valid 26-char hex string for Paddle validation
+  const validId =
+    "txn_" +
+    [...Array(26)]
+      .map(() => Math.floor(Math.random() * 16).toString(16))
+      .join("");
+
   const mockTransactionPayload = {
-    id: `txn_sim_${Date.now()}`,
+    id: validId, // Use the regex-compliant ID
     status: "completed",
     customer_id: fullSubscriptionPayload.customer_id,
     subscription_id: fullSubscriptionPayload.id,
@@ -84,18 +87,16 @@ async function createSimulation(fullSubscriptionPayload: any, cycles: number) {
     details: {
       totals: {
         currency_code: fullSubscriptionPayload.currency_code || "USD",
-        // Pass the calculated total as a string (e.g., "2900" for $29.00)
         total: totalAmountCents.toString(),
       },
     },
-    // IMPORTANT: Your webhook relies on this to find the affiliate!
     custom_data: fullSubscriptionPayload.custom_data || {},
   };
 
   const payload = {
     notification_setting_id: NOTIFICATION_SETTING_ID,
     name: `Simulate Renewal ($${(totalAmountCents / 100).toFixed(2)}) - ${Date.now()}`,
-    type: "transaction.completed", // Now matches your webhook switch case
+    type: "transaction.completed",
     payload: mockTransactionPayload,
   };
 
