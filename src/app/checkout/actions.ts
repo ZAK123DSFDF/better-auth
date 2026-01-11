@@ -51,11 +51,14 @@ export async function createCheckoutSession(
   const cookieStore = await cookies();
   const affiliateCookie = cookieStore.get("refearnapp_affiliate_cookie");
 
+  // Determine if this is a subscription or a one-time payment
+  // If a priceId is provided, we assume it's a subscription
   const mode = priceId ? "subscription" : "payment";
+
+  // Default one-time price if no priceId is provided
   const price = priceId || "price_1RZyPg4gdP9i8VnsQGLV99nS";
 
-  // Define the session configuration
-  const sessionOptions: any = {
+  const session = await stripe.checkout.sessions.create({
     customer_email: userEmail,
     payment_method_types: ["card"],
     mode: mode,
@@ -72,16 +75,7 @@ export async function createCheckoutSession(
         ? decodeURIComponent(affiliateCookie.value)
         : null,
     },
-  };
-
-  // ✅ ADD TRIAL ONLY IF MODE IS SUBSCRIPTION
-  if (mode === "subscription") {
-    sessionOptions.subscription_data = {
-      trial_period_days: 60,
-    };
-  }
-
-  const session = await stripe.checkout.sessions.create(sessionOptions);
+  });
 
   return { url: session.url };
 }
