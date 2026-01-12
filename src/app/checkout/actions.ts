@@ -67,7 +67,8 @@ export async function createCheckoutSession(
     subscription_data:
       mode === "subscription"
         ? {
-            trial_period_days: trialDays,
+            trial_period_days:
+              trialDays && trialDays > 0 ? trialDays : undefined,
             metadata: {
               refearnapp_affiliate_code: affiliateCookie
                 ? decodeURIComponent(affiliateCookie.value)
