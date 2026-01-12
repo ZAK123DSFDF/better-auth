@@ -13,15 +13,22 @@ async function getSubscriptionIdByEmail(email: string) {
   if (!customerJson.data?.length) throw new Error(`❌ No customer: ${email}`);
 
   const customerId = customerJson.data[0].id;
+
+  // ✅ Fix: Include trialing in the status filter
   const subRes = await fetch(
-    `${PADDLE_API}/subscriptions?customer_id=${customerId}&status=active`,
+    `${PADDLE_API}/subscriptions?customer_id=${customerId}&status=active,trialing`,
     {
       headers: { Authorization: `Bearer ${API_KEY}` },
     },
   );
+
   const subJson = await subRes.json();
+
+  // Update error message to be more accurate
   if (!subJson.data?.length)
-    throw new Error(`❌ No active sub for: ${customerId}`);
+    throw new Error(
+      `❌ No active or trialing sub found for customer ID: ${customerId}`,
+    );
 
   return subJson.data[0].id;
 }

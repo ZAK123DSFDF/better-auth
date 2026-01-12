@@ -18,15 +18,21 @@ export default function CheckoutPage({
   currentPriceId,
 }: Props) {
   const [loadingPrice, setLoadingPrice] = useState<string | null>(null);
-
+  const [useTrial, setUseTrial] = useState(false);
+  const [trialDays, setTrialDays] = useState(14);
   const PLAN_20_ID = "price_1RZXfw4gdP9i8VnsO225oxSK";
   const PLAN_40_ID = "price_1Raa5s4gdP9i8VnsUkSoqWsX";
 
   async function handleCheckout(priceId?: string) {
     setLoadingPrice(priceId || "one-time");
     try {
+      const dynamicTrial = useTrial && priceId ? trialDays : undefined;
       // Pass userEmail here so Stripe ties the purchase to the account
-      const { url } = await createCheckoutSession(userEmail, priceId);
+      const { url } = await createCheckoutSession(
+        userEmail,
+        priceId,
+        dynamicTrial,
+      );
       if (url) window.location.href = url;
     } finally {
       setLoadingPrice(null);
@@ -53,6 +59,41 @@ export default function CheckoutPage({
   return (
     <div className="flex flex-col gap-8 p-8 max-w-md mx-auto">
       <section className="space-y-4">
+        {!isSubscribed && (
+          <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <input
+              type="checkbox"
+              id="trial-toggle"
+              checked={useTrial}
+              onChange={(e) => setUseTrial(e.target.checked)}
+              className="w-5 h-5 cursor-pointer"
+            />
+            <label
+              htmlFor="trial-toggle"
+              className="text-sm font-medium text-blue-800 cursor-pointer"
+            >
+              Add {trialDays}-day free trial to my subscription
+            </label>
+            {useTrial && (
+              <div className="flex items-center gap-2 mt-2 animate-in fade-in slide-in-from-top-1">
+                <span className="text-sm text-blue-700">Days:</span>
+                <input
+                  type="number"
+                  value={trialDays}
+                  onChange={(e) =>
+                    setTrialDays(Math.max(1, parseInt(e.target.value) || 0))
+                  }
+                  className="w-20 px-2 py-1 border border-blue-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  min="1"
+                />
+                <p className="text-xs text-blue-600 italic">
+                  User won't be charged for {trialDays} days.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* One-Time Payment */}
         <div className="border p-4 rounded-lg shadow-sm">
           <p className="font-semibold">Lifetime Access</p>

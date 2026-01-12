@@ -47,34 +47,44 @@ export async function getUserSubscription(email: string) {
 export async function createCheckoutSession(
   userEmail: string,
   priceId?: string,
+  trialDays?: number, // ✅ New parameter
 ) {
   const cookieStore = await cookies();
   const affiliateCookie = cookieStore.get("refearnapp_affiliate_cookie");
 
-  // Determine if this is a subscription or a one-time payment
-  // If a priceId is provided, we assume it's a subscription
   const mode = priceId ? "subscription" : "payment";
-
-  // Default one-time price if no priceId is provided
   const price = priceId || "price_1RZyPg4gdP9i8VnsQGLV99nS";
 
   const session = await stripe.checkout.sessions.create({
     customer_email: userEmail,
     payment_method_types: ["card"],
     mode: mode,
-    line_items: [
-      {
-        price: price,
-        quantity: 1,
-      },
-    ],
+    line_items: [{ price: price, quantity: 1 }],
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
-    metadata: {
-      refearnapp_affiliate_code: affiliateCookie
-        ? decodeURIComponent(affiliateCookie.value)
-        : null,
-    },
+
+    // ✅ Apply trial only if it's a subscription mode
+    subscription_data:
+      mode === "subscription"
+        ? {
+            trial_period_days: trialDays,
+            metadata: {
+              refearnapp_affiliate_code: affiliateCookie
+                ? decodeURIComponent(affiliateCookie.value)
+                : null,
+            },
+          }
+        : undefined,
+
+    // If it's a "payment" mode, metadata goes here instead
+    metadata:
+      mode === "payment"
+        ? {
+            refearnapp_affiliate_code: affiliateCookie
+              ? decodeURIComponent(affiliateCookie.value)
+              : null,
+          }
+        : {},
   });
 
   return { url: session.url };
