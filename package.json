@@ -9,6 +9,7 @@
     "lint": "next lint",
     "simulate:cycle": "bun src/lib/subscriptionCycle.ts",
     "simulate:refund": "bun src/lib/mimic-refund.ts",
+    "simulate:renew": "bun src/lib/subscriptionRenew.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
