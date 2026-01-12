@@ -47,13 +47,18 @@ export async function getUserSubscription(email: string) {
 export async function createCheckoutSession(
   userEmail: string,
   priceId?: string,
-  trialDays?: number, // ✅ New parameter
+  trialDays?: number,
 ) {
   const cookieStore = await cookies();
   const affiliateCookie = cookieStore.get("refearnapp_affiliate_cookie");
 
   const mode = priceId ? "subscription" : "payment";
   const price = priceId || "price_1RZyPg4gdP9i8VnsQGLV99nS";
+
+  // 1. Prepare the affiliate code
+  const affiliateCode = affiliateCookie
+    ? decodeURIComponent(affiliateCookie.value)
+    : null;
 
   const session = await stripe.checkout.sessions.create({
     customer_email: userEmail,
@@ -63,29 +68,23 @@ export async function createCheckoutSession(
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
 
-    // ✅ Apply trial only if it's a subscription mode
+    // ✅ Top-level metadata (This is what checkout.session.completed looks at)
+    metadata: {
+      refearnapp_affiliate_code: affiliateCode,
+    },
+
+    // ✅ Subscription specific settings (Trial)
     subscription_data:
       mode === "subscription"
         ? {
             trial_period_days:
               trialDays && trialDays > 0 ? trialDays : undefined,
+            // Optional: Also put it here if you want it on the Subscription object in Stripe Dashboard
             metadata: {
-              refearnapp_affiliate_code: affiliateCookie
-                ? decodeURIComponent(affiliateCookie.value)
-                : null,
+              refearnapp_affiliate_code: affiliateCode,
             },
           }
         : undefined,
-
-    // If it's a "payment" mode, metadata goes here instead
-    metadata:
-      mode === "payment"
-        ? {
-            refearnapp_affiliate_code: affiliateCookie
-              ? decodeURIComponent(affiliateCookie.value)
-              : null,
-          }
-        : {},
   });
 
   return { url: session.url };
