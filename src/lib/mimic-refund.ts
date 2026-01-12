@@ -1,4 +1,9 @@
 import readline from "readline";
+import {
+  generatePaddleId,
+  getTransaction,
+  runSimulation,
+} from "@/lib/paddle-test-utils";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -7,17 +12,6 @@ const rl = readline.createInterface({
 const PADDLE_API = "https://sandbox-api.paddle.com";
 const API_KEY = process.env.PADDLE_API_KEY!;
 const NOTIFICATION_SETTING_ID = process.env.PADDLE_NOTIFICATION_SETTING_ID!;
-/**
- * 1. Fetch Transaction Details to get the Max Refundable Amount
- */
-async function getTransaction(transactionId: string) {
-  const res = await fetch(`${PADDLE_API}/transactions/${transactionId}`, {
-    headers: { Authorization: `Bearer ${API_KEY}` },
-  });
-  const json = await res.json();
-  if (!json.data) throw new Error("Transaction not found.");
-  return json.data;
-}
 
 /**
  * 2. Create the Refund Simulation
@@ -25,9 +19,9 @@ async function getTransaction(transactionId: string) {
 async function simulateRefund(tx: any, refundAmountCents: number) {
   const isFull = refundAmountCents === parseInt(tx.details.totals.total);
 
-  // Create a mock adjustment payload matching the one you shared
   const mockAdjustmentPayload = {
-    id: "adj_" + Math.random().toString(36).substring(2, 15),
+    // ✅ Generate a valid 26-character ID
+    id: generatePaddleId("adj"),
     action: "refund",
     status: "approved",
     transaction_id: tx.id,
@@ -58,6 +52,13 @@ async function simulateRefund(tx: any, refundAmountCents: number) {
   });
 
   const json = await res.json();
+
+  // ✅ ERROR CHECK: This will tell you EXACTLY why Paddle is failing
+  if (!res.ok || !json.data) {
+    console.error("❌ Paddle API Error Detail:", JSON.stringify(json, null, 2));
+    throw new Error(`Simulation creation failed with status ${res.status}`);
+  }
+
   return json.data.id;
 }
 
