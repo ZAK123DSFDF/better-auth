@@ -63,13 +63,45 @@ export function generatePaddleId(prefix: string) {
   return `${prefix}_${result}`;
 }
 /**
- * 1. Fetch Transaction Details to get the Max Refundable Amount
+ * 1. Smart Fetch: Paddle API -> Your Proxy API
  */
 export async function getTransaction(transactionId: string) {
-  const res = await fetch(`${PADDLE_API}/transactions/${transactionId}`, {
+  // Try Paddle Sandbox first
+  const paddleRes = await fetch(`${PADDLE_API}/transactions/${transactionId}`, {
     headers: { Authorization: `Bearer ${API_KEY}` },
   });
-  const json = await res.json();
-  if (!json.data) throw new Error("Transaction not found.");
-  return json.data;
+
+  const paddleJson = await paddleRes.json();
+  if (paddleRes.ok && paddleJson.data) {
+    return paddleJson.data;
+  }
+
+  console.log("🔍 Not in Paddle Sandbox. Checking RefearnApp API...");
+
+  // Fallback: Your new Proxy API
+  const proxyRes = await fetch(
+    `https://origin.refearnapp.com/api/debug/transaction/${transactionId}`,
+    {
+      headers: { "x-refearn-debug-secret": process.env.DEBUG_SECRET! },
+    },
+  );
+
+  const proxyJson = await proxyRes.json();
+
+  if (!proxyRes.ok) {
+    throw new Error(`Transaction ${transactionId} not found in any source.`);
+  }
+
+  // Map Proxy data to match the Paddle transaction structure
+  return {
+    id: proxyJson.id,
+    customer_id: proxyJson.customer_id,
+    subscription_id: proxyJson.subscription_id,
+    details: {
+      totals: {
+        total: (parseFloat(proxyJson.amount) * 100).toString(),
+        currency_code: proxyJson.currency,
+      },
+    },
+  };
 }
