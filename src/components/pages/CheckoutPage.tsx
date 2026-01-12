@@ -19,14 +19,16 @@ export default function CheckoutPage({
 }: Props) {
   const [loadingPrice, setLoadingPrice] = useState<string | null>(null);
   const [useTrial, setUseTrial] = useState(false);
-  const [trialDays, setTrialDays] = useState(14);
+  const [trialInput, setTrialInput] = useState("14");
   const PLAN_20_ID = "price_1RZXfw4gdP9i8VnsO225oxSK";
   const PLAN_40_ID = "price_1Raa5s4gdP9i8VnsUkSoqWsX";
 
   async function handleCheckout(priceId?: string) {
     setLoadingPrice(priceId || "one-time");
     try {
-      const dynamicTrial = useTrial && priceId ? trialDays : undefined;
+      const days = parseInt(trialInput);
+      const dynamicTrial =
+        useTrial && priceId && !isNaN(days) ? Math.max(1, days) : undefined;
       // Pass userEmail here so Stripe ties the purchase to the account
       const { url } = await createCheckoutSession(
         userEmail,
@@ -72,22 +74,27 @@ export default function CheckoutPage({
               htmlFor="trial-toggle"
               className="text-sm font-medium text-blue-800 cursor-pointer"
             >
-              Add {trialDays}-day free trial to my subscription
+              Add {trialInput || "0"}-day free trial
             </label>
             {useTrial && (
-              <div className="flex items-center gap-2 mt-2 animate-in fade-in slide-in-from-top-1">
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
                 <span className="text-sm text-blue-700">Days:</span>
                 <input
-                  type="number"
-                  value={trialDays}
-                  onChange={(e) =>
-                    setTrialDays(Math.max(1, parseInt(e.target.value) || 0))
-                  }
+                  type="text" // ✅ Use text type to avoid some browser number quirks
+                  inputMode="numeric" // ✅ Shows numeric keyboard on mobile
+                  value={trialInput}
+                  onChange={(e) => {
+                    // ✅ Allow only numbers or empty string
+                    const val = e.target.value;
+                    if (val === "" || /^\d+$/.test(val)) {
+                      setTrialInput(val);
+                    }
+                  }}
+                  placeholder="e.g. 60"
                   className="w-20 px-2 py-1 border border-blue-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  min="1"
                 />
                 <p className="text-xs text-blue-600 italic">
-                  User won't be charged for {trialDays} days.
+                  Charge starts after {trialInput || "0"} days.
                 </p>
               </div>
             )}
