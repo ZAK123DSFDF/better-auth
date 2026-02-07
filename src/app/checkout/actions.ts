@@ -54,7 +54,11 @@ export async function createCheckoutSession(
 
   const mode = priceId ? "subscription" : "payment";
   const price = priceId || "price_1RZyPg4gdP9i8VnsQGLV99nS";
-
+  const eligiblePriceIds = [
+    "price_1RZXfw4gdP9i8VnsO225oxSK", // Basic $20
+    "price_1Raa5s4gdP9i8VnsUkSoqWsX", // Pro $40
+  ];
+  const isEligibleProduct = eligiblePriceIds.includes(price);
   // 1. Prepare the affiliate code
   const affiliateCode = affiliateCookie
     ? decodeURIComponent(affiliateCookie.value)
@@ -72,7 +76,9 @@ export async function createCheckoutSession(
     metadata: {
       refearnapp_affiliate_code: affiliateCode,
     },
-    discounts: [{ coupon: "68OZLVWo" }],
+    ...(isEligibleProduct
+      ? { discounts: [{ coupon: "68OZLVWo" }] }
+      : { allow_promotion_codes: true }),
     // ✅ Subscription specific settings (Trial)
     subscription_data:
       mode === "subscription"
