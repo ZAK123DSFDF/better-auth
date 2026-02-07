@@ -44,20 +44,34 @@ export async function getUserSubscription(email: string) {
   return { subscribed: false, currentPriceId: null };
 }
 export async function getPriceDiscounts(priceId: string) {
-  // We list promotion codes. In a real app, you might filter by metadata
-  // to only show ones relevant to this specific product.
+  if (!priceId) return [];
+
+  // 1. Get the product ID for this specific price
+  const price = await stripe.prices.retrieve(priceId);
+  const productId = price.product as string;
+
+  // 2. Fetch active promo codes and expand the coupon rules
   const promoCodes = await stripe.promotionCodes.list({
     active: true,
-    limit: 5,
+    expand: ["data.coupon.applies_to"],
+    limit: 10,
   });
 
-  return promoCodes.data.map((p) => ({
-    id: p.id,
-    code: p.code,
-    couponId: p.coupon.id,
-    name: p.coupon.name || p.code,
-    percentOff: p.coupon.percent_off,
-  }));
+  // 3. Filter: Only return codes that apply to this product OR apply to everything
+  return promoCodes.data
+    .filter((p) => {
+      const appliesTo = p.coupon.applies_to;
+      // If applies_to is null, it works for all products
+      if (!appliesTo || !appliesTo.products) return true;
+      return appliesTo.products.includes(productId);
+    })
+    .map((p) => ({
+      id: p.id,
+      code: p.code,
+      couponId: p.coupon.id,
+      name: p.coupon.name || p.code,
+      percentOff: p.coupon.percent_off,
+    }));
 }
 // 🟦 Buy New Subscription
 export async function createCheckoutSession(
@@ -71,16 +85,26 @@ export async function createCheckoutSession(
 
   const mode = priceId ? "subscription" : "payment";
   const price = priceId || "price_1RZyPg4gdP9i8VnsQGLV99nS";
-  const promoCodes = await stripe.promotionCodes.list({
-    code: selectedPromoCode,
-    active: true,
-    limit: 1,
-  });
-  // 1. Prepare the affiliate code
+
+  // 1. Resolve the Affiliate Code from Cookie
   const affiliateCode = affiliateCookie
     ? decodeURIComponent(affiliateCookie.value)
     : null;
 
+  // 2. Try to find a matching promo code that is valid for this price
+  let promoToApply: string | null = null;
+
+  if (selectedPromoCode) {
+    const validPromosForThisPrice = await getPriceDiscounts(price);
+    const match = validPromosForThisPrice.find(
+      (p) => p.code === selectedPromoCode,
+    );
+    if (match) {
+      promoToApply = match.id; // Use the promo_... ID
+    }
+  }
+
+  // 3. Create the Session
   const session = await stripe.checkout.sessions.create({
     customer_email: userEmail,
     payment_method_types: ["card"],
@@ -88,31 +112,27 @@ export async function createCheckoutSession(
     line_items: [{ price: price, quantity: 1 }],
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
-
-    // ✅ Top-level metadata (This is what checkout.session.completed looks at)
     metadata: {
       refearnapp_affiliate_code: affiliateCode,
     },
-    ...(promoCodes.data.length > 0
-      ? { discounts: [{ promotion_code: promoCodes.data[0].id }] }
+
+    // ✅ Switch: Apply specific code if valid, otherwise enable manual box
+    ...(promoToApply
+      ? { discounts: [{ promotion_code: promoToApply }] }
       : { allow_promotion_codes: true }),
-    // ✅ Subscription specific settings (Trial)
+
     subscription_data:
       mode === "subscription"
         ? {
             trial_period_days:
               trialDays && trialDays > 0 ? trialDays : undefined,
-            // Optional: Also put it here if you want it on the Subscription object in Stripe Dashboard
-            metadata: {
-              refearnapp_affiliate_code: affiliateCode,
-            },
+            metadata: { refearnapp_affiliate_code: affiliateCode },
           }
         : undefined,
   });
 
   return { url: session.url };
 }
-
 // 🟩 Upgrade Subscription
 export async function upgradeSubscriptionSession(
   email: string,
