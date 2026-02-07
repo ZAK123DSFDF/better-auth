@@ -43,6 +43,19 @@ export async function getUserSubscription(email: string) {
 
   return { subscribed: false, currentPriceId: null };
 }
+export async function getAllAvailablePromos() {
+  const promoCodes = await stripe.promotionCodes.list({
+    active: true,
+    limit: 20,
+  });
+
+  return promoCodes.data.map((p) => ({
+    id: p.id,
+    code: p.code,
+    name: p.coupon.name || p.code,
+    percentOff: p.coupon.percent_off,
+  }));
+}
 export async function getPriceDiscounts(priceId: string) {
   if (!priceId) return [];
 

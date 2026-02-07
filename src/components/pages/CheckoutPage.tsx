@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   createCheckoutSession,
+  getAllAvailablePromos,
   getPriceDiscounts,
   upgradeSubscriptionSession,
 } from "@/app/checkout/actions";
@@ -33,7 +34,7 @@ export default function CheckoutPage({
 
   // Fetch promos on load
   useEffect(() => {
-    getPriceDiscounts("").then(setAvailablePromos);
+    getAllAvailablePromos().then(setAvailablePromos);
   }, []);
 
   async function handleCheckout(priceId?: string) {
