@@ -72,7 +72,7 @@ export async function createCheckoutSession(
     metadata: {
       refearnapp_affiliate_code: affiliateCode,
     },
-
+    allow_promotion_codes: true,
     // ✅ Subscription specific settings (Trial)
     subscription_data:
       mode === "subscription"
