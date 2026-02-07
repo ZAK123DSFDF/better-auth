@@ -77,7 +77,7 @@ export async function createCheckoutSession(
       refearnapp_affiliate_code: affiliateCode,
     },
     ...(isEligibleProduct
-      ? { discounts: [{ coupon: "68OZLVWo" }] }
+      ? { discounts: [{ coupon: "ZzQIVqva" }] }
       : { allow_promotion_codes: true }),
     // ✅ Subscription specific settings (Trial)
     subscription_data:
