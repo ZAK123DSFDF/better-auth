@@ -66,7 +66,7 @@ export async function createCheckoutSession(
     line_items: [{ price: price, quantity: 1 }],
     success_url: `${baseUrl}/success`,
     cancel_url: `${baseUrl}/cancel`,
-
+    allow_promotion_codes: true,
     // ✅ Top-level metadata (This is what checkout.session.completed looks at)
     metadata: {
       refearnapp_affiliate_code: affiliateCode,
