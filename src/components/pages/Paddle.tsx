@@ -59,6 +59,8 @@ export default function Payment({
         displayMode: "overlay",
         theme: "light",
         successUrl,
+        showAddDiscounts: true,
+        allowDiscountRemoval: true,
       },
     });
   };
