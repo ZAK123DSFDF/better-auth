@@ -43,22 +43,39 @@ export async function getUserSubscription(email: string) {
 
   return { subscribed: false, currentPriceId: null };
 }
+export async function getPriceDiscounts(priceId: string) {
+  // We list promotion codes. In a real app, you might filter by metadata
+  // to only show ones relevant to this specific product.
+  const promoCodes = await stripe.promotionCodes.list({
+    active: true,
+    limit: 5,
+  });
+
+  return promoCodes.data.map((p) => ({
+    id: p.id,
+    code: p.code,
+    couponId: p.coupon.id,
+    name: p.coupon.name || p.code,
+    percentOff: p.coupon.percent_off,
+  }));
+}
 // 🟦 Buy New Subscription
 export async function createCheckoutSession(
   userEmail: string,
   priceId?: string,
   trialDays?: number,
+  selectedPromoCode?: string,
 ) {
   const cookieStore = await cookies();
   const affiliateCookie = cookieStore.get("refearnapp_affiliate_cookie");
 
   const mode = priceId ? "subscription" : "payment";
   const price = priceId || "price_1RZyPg4gdP9i8VnsQGLV99nS";
-  const eligiblePriceIds = [
-    "price_1RZXfw4gdP9i8VnsO225oxSK", // Basic $20
-    "price_1Raa5s4gdP9i8VnsUkSoqWsX", // Pro $40
-  ];
-  const isEligibleProduct = eligiblePriceIds.includes(price);
+  const promoCodes = await stripe.promotionCodes.list({
+    code: selectedPromoCode,
+    active: true,
+    limit: 1,
+  });
   // 1. Prepare the affiliate code
   const affiliateCode = affiliateCookie
     ? decodeURIComponent(affiliateCookie.value)
@@ -76,8 +93,8 @@ export async function createCheckoutSession(
     metadata: {
       refearnapp_affiliate_code: affiliateCode,
     },
-    ...(isEligibleProduct
-      ? { discounts: [{ coupon: "ZzQIVqva" }] }
+    ...(promoCodes.data.length > 0
+      ? { discounts: [{ promotion_code: promoCodes.data[0].id }] }
       : { allow_promotion_codes: true }),
     // ✅ Subscription specific settings (Trial)
     subscription_data:

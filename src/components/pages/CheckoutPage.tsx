@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createCheckoutSession,
+  getPriceDiscounts,
   upgradeSubscriptionSession,
 } from "@/app/checkout/actions";
 
@@ -20,8 +21,20 @@ export default function CheckoutPage({
   const [loadingPrice, setLoadingPrice] = useState<string | null>(null);
   const [useTrial, setUseTrial] = useState(false);
   const [trialInput, setTrialInput] = useState("14");
+
+  // New States for Dynamic Promos
+  const [availablePromos, setAvailablePromos] = useState<any[]>([]);
+  const [selectedPromoString, setSelectedPromoString] = useState<string | null>(
+    null,
+  );
+
   const PLAN_20_ID = "price_1RZXfw4gdP9i8VnsO225oxSK";
   const PLAN_40_ID = "price_1Raa5s4gdP9i8VnsUkSoqWsX";
+
+  // Fetch promos on load
+  useEffect(() => {
+    getPriceDiscounts("").then(setAvailablePromos);
+  }, []);
 
   async function handleCheckout(priceId?: string) {
     setLoadingPrice(priceId || "one-time");
@@ -29,12 +42,15 @@ export default function CheckoutPage({
       const days = parseInt(trialInput);
       const dynamicTrial =
         useTrial && priceId && !isNaN(days) ? Math.max(1, days) : undefined;
-      // Pass userEmail here so Stripe ties the purchase to the account
+
+      // ✅ We pass selectedPromoString (e.g., "ACME-10") to the server
       const { url } = await createCheckoutSession(
         userEmail,
         priceId,
         dynamicTrial,
+        selectedPromoString || undefined,
       );
+
       if (url) window.location.href = url;
     } finally {
       setLoadingPrice(null);
@@ -43,14 +59,10 @@ export default function CheckoutPage({
 
   async function handleUpdatePlan(priceId: string, label: string) {
     if (priceId === currentPriceId) return;
-
     setLoadingPrice(`update-${priceId}`);
     try {
-      // Pass userEmail here so the server knows which customer to upgrade
       const res = await upgradeSubscriptionSession(userEmail, priceId);
-      if (res.success) {
-        alert(`Successfully switched to ${label}!`);
-      }
+      if (res.success) alert(`Successfully switched to ${label}!`);
     } catch (err) {
       alert("Update failed. Make sure you have an active subscription.");
     } finally {
@@ -60,7 +72,56 @@ export default function CheckoutPage({
 
   return (
     <div className="flex flex-col gap-8 p-8 max-w-md mx-auto">
+      {/* 🎟️ New Promotion Selection Section */}
+      {!isSubscribed && availablePromos.length > 0 && (
+        <section className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-4">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+            Available Deals
+          </h3>
+          <div className="flex flex-col gap-2">
+            {/* Option to use no pre-selected code (manual entry) */}
+            <label
+              className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${!selectedPromoString ? "border-blue-500 bg-blue-50" : "border-gray-100 hover:bg-gray-50"}`}
+            >
+              <span className="text-sm font-medium">None / Manual Entry</span>
+              <input
+                type="radio"
+                name="promo"
+                className="hidden"
+                checked={!selectedPromoString}
+                onChange={() => setSelectedPromoString(null)}
+              />
+            </label>
+
+            {/* Map through Stripe Promo Codes */}
+            {availablePromos.map((promo) => (
+              <label
+                key={promo.id}
+                className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${selectedPromoString === promo.code ? "border-green-500 bg-green-50" : "border-gray-100 hover:bg-gray-50"}`}
+              >
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-green-700">
+                    {promo.code}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {promo.percentOff}% Discount
+                  </span>
+                </div>
+                <input
+                  type="radio"
+                  name="promo"
+                  className="hidden"
+                  checked={selectedPromoString === promo.code}
+                  onChange={() => setSelectedPromoString(promo.code)}
+                />
+              </label>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="space-y-4">
+        {/* Trial Toggle */}
         {!isSubscribed && (
           <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <input
@@ -76,43 +137,24 @@ export default function CheckoutPage({
             >
               Add {trialInput || "0"}-day free trial
             </label>
-            {useTrial && (
-              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
-                <span className="text-sm text-blue-700">Days:</span>
-                <input
-                  type="text" // ✅ Use text type to avoid some browser number quirks
-                  inputMode="numeric" // ✅ Shows numeric keyboard on mobile
-                  value={trialInput}
-                  onChange={(e) => {
-                    // ✅ Allow only numbers or empty string
-                    const val = e.target.value;
-                    if (val === "" || /^\d+$/.test(val)) {
-                      setTrialInput(val);
-                    }
-                  }}
-                  placeholder="e.g. 60"
-                  className="w-20 px-2 py-1 border border-blue-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <p className="text-xs text-blue-600 italic">
-                  Charge starts after {trialInput || "0"} days.
-                </p>
-              </div>
-            )}
           </div>
         )}
 
         {/* One-Time Payment */}
         <div className="border p-4 rounded-lg shadow-sm">
-          <p className="font-semibold">Lifetime Access</p>
+          <p className="font-semibold text-gray-700">Lifetime Access</p>
           <button
             onClick={() => handleCheckout()}
             disabled={!!loadingPrice}
-            className="w-full mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+            className="w-full mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 font-medium"
           >
             {loadingPrice === "one-time" ? "Processing..." : "Buy Once"}
           </button>
         </div>
-        <h2 className="text-xl font-bold border-b pb-2">New Customers</h2>
+
+        <h2 className="text-xl font-bold border-b pb-2 text-gray-800">
+          New Customers
+        </h2>
 
         {/* $20 Subscription */}
         <div className="border p-4 rounded-lg shadow-sm border-green-200 bg-green-50">
@@ -139,7 +181,7 @@ export default function CheckoutPage({
         </div>
       </section>
 
-      {/* Only show Manage Plan if they are actually subscribed */}
+      {/* Management Section */}
       {isSubscribed && (
         <section className="space-y-4 bg-gray-100 p-4 rounded-xl">
           <h2 className="text-lg font-bold text-gray-700">
@@ -153,7 +195,6 @@ export default function CheckoutPage({
             >
               {currentPriceId === PLAN_20_ID ? "Current Plan" : "Switch to $20"}
             </button>
-
             <button
               onClick={() => handleUpdatePlan(PLAN_40_ID, "Pro")}
               disabled={!!loadingPrice || currentPriceId === PLAN_40_ID}
