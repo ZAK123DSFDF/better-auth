@@ -73,7 +73,6 @@ export async function createCheckoutSession(
       refearnapp_affiliate_code: affiliateCode,
     },
     discounts: [{ coupon: "ACME-INC" }],
-    allow_promotion_codes: true,
     // ✅ Subscription specific settings (Trial)
     subscription_data:
       mode === "subscription"
