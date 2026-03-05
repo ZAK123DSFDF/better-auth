@@ -7,6 +7,7 @@ import {
   getPriceDiscounts,
   upgradeSubscriptionSession,
 } from "@/app/checkout/actions";
+import { initRefearnapp, trackSignup } from "@refearnapp/js";
 
 interface Props {
   userEmail: string;
@@ -22,7 +23,7 @@ export default function CheckoutPage({
   const [loadingPrice, setLoadingPrice] = useState<string | null>(null);
   const [useTrial, setUseTrial] = useState(false);
   const [trialInput, setTrialInput] = useState("14");
-
+  const [isTracking, setIsTracking] = useState(false);
   // New States for Dynamic Promos
   const [availablePromos, setAvailablePromos] = useState<any[]>([]);
   const [selectedPromoString, setSelectedPromoString] = useState<string | null>(
@@ -34,9 +35,29 @@ export default function CheckoutPage({
 
   // Fetch promos on load
   useEffect(() => {
+    initRefearnapp("https://refearnapp.com");
     getAllAvailablePromos().then(setAvailablePromos);
   }, []);
+  async function handleManualTrack() {
+    setIsTracking(true);
+    try {
+      // This sends 'zak@gmail.com' to https://refearnapp.com/track-signup
+      const result = await trackSignup("zak@gmail.com");
 
+      if (result.success) {
+        alert("Success! zak@gmail.com linked to affiliate.");
+      } else {
+        alert(
+          `Tracking failed: ${result.reason || "Check if you have an affiliate cookie"}`,
+        );
+      }
+    } catch (err) {
+      console.error("Tracking Error:", err);
+      alert("Network error while tracking.");
+    } finally {
+      setIsTracking(false);
+    }
+  }
   async function handleCheckout(priceId?: string) {
     setLoadingPrice(priceId || "one-time");
     try {
@@ -206,6 +227,18 @@ export default function CheckoutPage({
           </div>
         </section>
       )}
+      <section className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <h3 className="text-xs font-bold text-blue-600 uppercase mb-2">
+          Affiliate Tracking
+        </h3>
+        <button
+          onClick={handleManualTrack}
+          disabled={isTracking}
+          className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isTracking ? "Linking..." : "Track zak@gmail.com"}
+        </button>
+      </section>
     </div>
   );
 }
