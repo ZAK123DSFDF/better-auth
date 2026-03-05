@@ -21,7 +21,7 @@
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.6",
-    "@refearnapp/js": "^0.1.4",
+    "@refearnapp/js": "^0.1.6",
     "@sendgrid/mail": "^8.1.4",
     "better-auth": "1.4.5",
     "class-variance-authority": "^0.7.1",
